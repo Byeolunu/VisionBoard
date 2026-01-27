@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BoardToCode</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Italianno&family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Montserrat:wght@300;400;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Plus Jakarta Sans', 'sans-serif'],
+              script: ['Italianno', 'cursive'],
+              display: ['Montserrat', 'sans-serif'],
+              mono: ['JetBrains Mono', 'monospace'],
+            },
+            colors: {
+              vintage: {
+                cream: '#fcf9f2',
+                pink: '#f1abb9',
+                teal: '#2d5a52',
+                tealHover: '#224741',
+                gold: '#d4af37',
+              }
+            },
+            boxShadow: {
+              'polaroid': '0 8px 16px -4px rgba(0,0,0,0.1), 0 4px 8px -4px rgba(0,0,0,0.06)',
+              'vibrant': '0 10px 25px -5px rgba(45, 90, 82, 0.15)',
+              'soft': '0 2px 15px -3px rgba(0,0,0,0.07), 0 4px 6px -2px rgba(0,0,0,0.05)',
+            }
+          },
+        },
+      }
+    </script>
+    <style>
+      :root {
+        --bg-cream: #fcf9f2;
+        --stripe-pink: #f1abb9;
+      }
+      body {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        background-color: var(--bg-cream);
+        color: #2d5a52;
+        height: 100%;
+        margin: 0;
+      }
+      
+      .bg-stripes {
+        background-color: var(--bg-cream);
+        background-image: linear-gradient(90deg, transparent 50%, rgba(241, 171, 185, 0.3) 50%);
+        background-size: 80px 100%;
+      }
+      
+      .dark .bg-stripes {
+        background-color: #020617;
+        background-image: linear-gradient(90deg, transparent 50%, rgba(241, 171, 185, 0.05) 50%);
+      }
+
+      .polaroid {
+        /* Support dark mode background via tailwind classes */
+        padding: 10px 10px 30px 10px;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        border: 1px solid #eee;
+      }
+      
+      .dark .polaroid {
+        border-color: #1e293b;
+      }
+
+      .markdown-content pre {
+        background: #222 !important;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin: 1.5rem 0;
+      }
+
+      @keyframes float {
+        0% { transform: translateY(0px) rotate(0deg); }
+        50% { transform: translateY(-10px) rotate(1deg); }
+        100% { transform: translateY(0px) rotate(0deg); }
+      }
+      .animate-float {
+        animation: float 6s ease-in-out infinite;
+      }
+      
+      .pill-button {
+        border-radius: 9999px;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        font-weight: 700;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      
+      /* KaTeX tweak for Tailwind Typography */
+      .katex-display {
+        margin: 1.5em 0;
+        overflow-x: auto;
+        overflow-y: hidden;
+      }
+      
+      /* Mermaid visibility */
+      .mermaid {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "lucide-react": "https://esm.sh/lucide-react@^0.561.0",
+    "@google/genai": "https://esm.sh/@google/genai@^1.33.0",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3",
+    "react-syntax-highlighter/": "https://esm.sh/react-syntax-highlighter@^16.1.0/",
+    "react-syntax-highlighter": "https://esm.sh/react-syntax-highlighter@^16.1.0",
+    "react-markdown": "https://esm.sh/react-markdown@9",
+    "remark-math": "https://esm.sh/remark-math@6",
+    "rehype-katex": "https://esm.sh/rehype-katex@7"
+  }
+}
+</script>
+</head>
+  <body class="selection:bg-vintage-teal selection:text-white h-full overflow-hidden">
+    <div id="root" class="h-full"></div>
+  </body>
+</html>
