@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Menu, Sparkles, Loader2, Brain, PanelsRightBottom, Moon, Sun } from 'lucide-react';
+
 import UploadArea from './components/UploadArea';
 import CodeDisplay from './components/CodeDisplay';
 import Sidebar from './components/Sidebar';

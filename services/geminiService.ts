@@ -1,8 +1,21 @@
 
+/// <reference types="vite/client" />
+
 import { GoogleGenAI, Type, Schema } from "@google/genai";
 import { AnalysisResult, ProgrammingLanguage, ChatMessage, OutputMode, QuizQuestion } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+let ai: GoogleGenAI;
+
+const getAI = () => {
+  if (!ai) {
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      throw new Error('GEMINI_API_KEY is not set. Please set it in your .env file.');
+    }
+    ai = new GoogleGenAI({ apiKey });
+  }
+  return ai;
+};
 
 const ANALYSIS_SCHEMA: Schema = {
   type: Type.OBJECT,
@@ -141,16 +154,16 @@ export const analyzeWhiteboard = async (
       5. Create 3-5 high-quality Flashcards.
       6. Fill all schema fields.
     `;
+    
 
-    const response = await ai.models.generateContent({
-      model: "gemini-3-pro-preview",
+    const response = await getAI().models.generateContent({
+      model: "models/gemini-2.5-flash",
       contents: {
         parts: [...parts, { text: promptText }],
       },
       config: {
         responseMimeType: "application/json",
         responseSchema: ANALYSIS_SCHEMA,
-        thinkingConfig: { thinkingBudget: 32768 },
         systemInstruction: "You are BoardToCode AI, an elite technical architect. Convert sketches to high-quality code and architectural diagrams. Always be precise, educational, and clean.",
       },
     });
@@ -174,8 +187,8 @@ export const generateQuiz = async (context: string): Promise<QuizQuestion[]> => 
             """${context.substring(0, 8000)}"""
         `;
 
-        const response = await ai.models.generateContent({
-            model: "gemini-3-pro-preview",
+        const response = await getAI().models.generateContent({
+            model: "models/gemini-2.0-flash",
             contents: {
                 parts: [{ text: prompt }]
             },
@@ -224,8 +237,8 @@ export const sendFollowUpMessage = async (
        });
     }
 
-    const chat = ai.chats.create({
-      model: "gemini-3-pro-preview",
+    const chat = getAI().chats.create({
+      model: "models/gemini-pro",
       config: { systemInstruction },
       history: contents,
     });
