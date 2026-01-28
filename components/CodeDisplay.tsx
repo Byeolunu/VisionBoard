@@ -42,62 +42,100 @@ interface CodeDisplayProps {
 
 const MermaidChart: React.FC<{ chart: string; theme: 'light' | 'dark' }> = ({ chart, theme }) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const renderChart = async () => {
-      if (containerRef.current && chart && (window as any).mermaid) {
-        try {
-          // Clean the chart code: remove ```mermaid and ``` wrappers if present
-          let cleanChart = chart.trim();
-          if (cleanChart.startsWith('```mermaid')) {
-            cleanChart = cleanChart.replace(/^```mermaid\n?/, '').replace(/\n?```$/, '');
-          } else if (cleanChart.startsWith('```')) {
-            cleanChart = cleanChart.replace(/^```\n?/, '').replace(/\n?```$/, '');
-          }
+  const cleanChartCode = (code: string) => {
+    let cleaned = code.trim();
+    // Remove markdown code blocks if present
+    cleaned = cleaned.replace(/^```mermaid\s*/i, '');
+    cleaned = cleaned.replace(/^```\s*/i, '');
+    cleaned = cleaned.replace(/\s*```$/i, '');
+    
+    // Ensure it starts with a valid mermaid keyword if missing
+    if (!cleaned.toLowerCase().startsWith('flowchart') && 
+        !cleaned.toLowerCase().startsWith('graph') && 
+        !cleaned.toLowerCase().startsWith('sequence') &&
+        !cleaned.toLowerCase().startsWith('class') &&
+        !cleaned.toLowerCase().startsWith('state') &&
+        !cleaned.toLowerCase().startsWith('erdiagram') &&
+        !cleaned.toLowerCase().startsWith('gantt') &&
+        !cleaned.toLowerCase().startsWith('pie')) {
+      cleaned = 'flowchart TD\n' + cleaned;
+    }
+    return cleaned;
+  };
 
-          // Clear current content
-          containerRef.current.innerHTML = '';
-          
-          // Create a temporary element for mermaid to find
-          const id = `mermaid-${Math.random().toString(36).substr(2, 9)}`;
-          const renderArea = document.createElement('div');
-          renderArea.id = id;
-          renderArea.className = 'mermaid';
-          renderArea.style.width = '100%';
-          renderArea.innerHTML = cleanChart;
-          containerRef.current.appendChild(renderArea);
+  const renderChart = async () => {
+    const mermaid = (window as any).mermaid;
+    if (!containerRef.current || !chart || !mermaid) return;
 
-          const mermaid = (window as any).mermaid;
-          mermaid.initialize({ 
-            theme: theme === 'dark' ? 'dark' : 'default',
-            startOnLoad: false,
-            securityLevel: 'loose',
-            fontFamily: 'Plus Jakarta Sans',
-          });
+    try {
+      setError(null);
+      const cleaned = cleanChartCode(chart);
+      
+      // Initialize mermaid
+      mermaid.initialize({
+        startOnLoad: false,
+        theme: theme === 'dark' ? 'dark' : 'default',
+        securityLevel: 'loose',
+        fontFamily: 'Plus Jakarta Sans',
+      });
 
-          await mermaid.run({
-            nodes: [renderArea],
-            suppressErrors: true
-          });
-        } catch (err) {
-          console.error("Mermaid Render Error:", err);
-          if (containerRef.current) {
-            containerRef.current.innerHTML = `
-              <div class="flex flex-col items-center justify-center p-10 text-center gap-4">
-                <AlertCircle class="w-10 h-10 text-red-500 opacity-50" />
-                <p class="text-xs font-bold uppercase tracking-widest text-red-500/60">Logic Visualization Failed</p>
-                <div class="text-[10px] font-mono bg-red-500/5 p-4 rounded-lg text-red-400 border border-red-500/10 max-w-lg overflow-auto">
-                   ${chart}
-                </div>
-              </div>
-            `;
-          }
+      const id = `mermaid-svg-${Math.random().toString(36).substring(2, 9)}`;
+      
+      // Use mermaid.render instead of mermaid.run for better React stability
+      const { svg } = await mermaid.render(id, cleaned);
+      
+      if (containerRef.current) {
+        containerRef.current.innerHTML = svg;
+        // Make the SVG responsive
+        const svgElement = containerRef.current.querySelector('svg');
+        if (svgElement) {
+          svgElement.style.width = '100%';
+          svgElement.style.height = 'auto';
+          svgElement.style.maxWidth = '100%';
         }
       }
-    };
+    } catch (err: any) {
+      console.error("Mermaid Render Error:", err);
+      setError(err.message || "Failed to parse diagram syntax.");
+    }
+  };
 
-    renderChart();
+  useEffect(() => {
+    // Small delay to ensure Mermaid script is fully initialized and DOM is stable
+    const timer = setTimeout(renderChart, 100);
+    return () => clearTimeout(timer);
   }, [chart, theme]);
+
+  if (error) {
+    return (
+      <div className={`w-full min-h-[300px] flex flex-col items-center justify-center p-10 text-center gap-6 border border-dashed rounded-3xl ${
+        theme === 'dark' ? 'bg-slate-900/50 border-red-500/20' : 'bg-red-50/30 border-red-200'
+      }`}>
+        <AlertCircle className="w-12 h-12 text-red-500 opacity-50" />
+        <div>
+          <h4 className="text-sm font-bold uppercase tracking-widest text-red-500 mb-2">Diagram Syntax Error</h4>
+          <p className={`text-xs max-w-md mx-auto ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>
+            The AI generated a vision that is too complex for the current layout.
+          </p>
+        </div>
+        <div className={`p-4 rounded-xl font-mono text-[10px] text-left overflow-auto max-w-full border ${
+          theme === 'dark' ? 'bg-slate-950 border-slate-800 text-slate-500' : 'bg-white border-red-100 text-red-400'
+        }`}>
+          {chart}
+        </div>
+        <button 
+          onClick={renderChart}
+          className={`pill-button px-6 py-2.5 text-[10px] flex items-center gap-2 ${
+            theme === 'dark' ? 'bg-slate-800 text-white hover:bg-slate-700' : 'bg-red-100 text-red-600 hover:bg-red-200'
+          }`}
+        >
+          <RotateCcw className="w-3.5 h-3.5" /> Re-attempt Visualization
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div 

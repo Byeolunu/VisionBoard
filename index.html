@@ -3,9 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>BoardToCode</title>
+    <title>BoardVision</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Italianno&family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Montserrat:wght@300;400;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <script>
@@ -62,14 +62,15 @@
       }
 
       .polaroid {
-        /* Support dark mode background via tailwind classes */
         padding: 10px 10px 30px 10px;
         box-shadow: 0 10px 20px rgba(0,0,0,0.1);
         border: 1px solid #eee;
+        background-color: white;
       }
       
       .dark .polaroid {
         border-color: #1e293b;
+        background-color: #1e293b;
       }
 
       .markdown-content pre {
@@ -96,18 +97,35 @@
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       }
       
-      /* KaTeX tweak for Tailwind Typography */
       .katex-display {
         margin: 1.5em 0;
         overflow-x: auto;
         overflow-y: hidden;
       }
       
-      /* Mermaid visibility */
       .mermaid {
         display: flex;
         justify-content: center;
         width: 100%;
+      }
+
+      /* Scrollbar styles */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: rgba(45, 90, 82, 0.1);
+        border-radius: 10px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: rgba(45, 90, 82, 0.2);
+      }
+      .dark ::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.05);
       }
     </style>
   <script type="importmap">
