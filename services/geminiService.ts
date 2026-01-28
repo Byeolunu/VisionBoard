@@ -1,7 +1,21 @@
+
+/// <reference types="vite/client" />
+
 import { GoogleGenAI, Type, Schema } from "@google/genai";
 import { AnalysisResult, ProgrammingLanguage, ChatMessage, OutputMode, QuizQuestion } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+let ai: GoogleGenAI;
+
+const getAI = () => {
+  if (!ai) {
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      throw new Error('GEMINI_API_KEY is not set. Please set it in your .env file.');
+    }
+    ai = new GoogleGenAI({ apiKey });
+  }
+  return ai;
+};
 
 const ANALYSIS_SCHEMA: Schema = {
   type: Type.OBJECT,
@@ -37,7 +51,7 @@ const ANALYSIS_SCHEMA: Schema = {
     },
     diagram: {
       type: Type.STRING,
-      description: "Mermaid.js diagram code (if applicable). MUST use 'flowchart TD' for logic flow. Quote all labels containing symbols like =, %, *, etc. Example: G[\"Calculate next = s * p % n\"]",
+      description: "Mermaid.js diagram code (if applicable).",
     },
     flashcards: {
       type: Type.ARRAY,
@@ -105,7 +119,7 @@ export const analyzeWhiteboard = async (
         modeInstruction = "Focus on extracting algorithms and generating clean code.";
         break;
       case 'diagram':
-        modeInstruction = "Focus on system design. Generate a clear Mermaid flowchart TD and explain the flow.";
+        modeInstruction = "Focus on system design. Generate a clear Mermaid diagram and explain the flow.";
         break;
       case 'math':
         modeInstruction = "Solve the math problem step-by-step with LaTeX.";
@@ -136,21 +150,21 @@ export const analyzeWhiteboard = async (
       1. Transcribe what you see.
       2. Explain the logic in simple terms (Student-friendly, use Markdown).
       3. Generate WORKING CODE (even if it's a diagram, implement the logic).
-      4. Generate a MERMAID DIAGRAM (if applicable). Use standard 'flowchart TD' syntax. Use double quotes for all node labels that contain math or special characters.
+      4. Generate a MERMAID DIAGRAM (if applicable).
       5. Create 3-5 high-quality Flashcards.
       6. Fill all schema fields.
     `;
+    
 
-    const response = await ai.models.generateContent({
-      model: "gemini-3-pro-preview",
+    const response = await getAI().models.generateContent({
+      model: "models/gemini-2.5-flash",
       contents: {
         parts: [...parts, { text: promptText }],
       },
       config: {
         responseMimeType: "application/json",
         responseSchema: ANALYSIS_SCHEMA,
-        thinkingConfig: { thinkingBudget: 32768 },
-        systemInstruction: "You are BoardToCode AI, an elite technical architect. Convert sketches to high-quality code and architectural diagrams. Always be precise, educational, and clean. For diagrams, use strict Mermaid.js flowchart syntax and quote all labels.",
+        systemInstruction: "You are BoardToCode AI, an elite technical architect. Convert sketches to high-quality code and architectural diagrams. Always be precise, educational, and clean.",
       },
     });
 
@@ -173,8 +187,8 @@ export const generateQuiz = async (context: string): Promise<QuizQuestion[]> => 
             """${context.substring(0, 8000)}"""
         `;
 
-        const response = await ai.models.generateContent({
-            model: "gemini-3-pro-preview",
+        const response = await getAI().models.generateContent({
+            model: "models/gemini-2.0-flash",
             contents: {
                 parts: [{ text: prompt }]
             },
@@ -223,8 +237,8 @@ export const sendFollowUpMessage = async (
        });
     }
 
-    const chat = ai.chats.create({
-      model: "gemini-3-pro-preview",
+    const chat = getAI().chats.create({
+      model: "models/gemini-pro",
       config: { systemInstruction },
       history: contents,
     });
