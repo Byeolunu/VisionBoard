@@ -1,6 +1,6 @@
 {
   "name": "BoardVision",
-  "description": "BoardToCode – Transform whiteboard sketches into production-ready code, diagrams, and study materials.",
+  "description": "BoardVision – Transform whiteboard sketches into production-ready code, diagrams, and study materials.",
   "requestFramePermissions": [
     "camera"
   ]
